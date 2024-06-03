@@ -59,6 +59,8 @@ public partial class MainWindow : Window
                 box.ShowAsync();
             }
         }
+
+        this.SizeChanged += (sender, e) => AdjustZoomToFit(ZoomableImage.Source as Bitmap);
     }
 
     private void AdjustZoomToFit(Bitmap bitmap)
@@ -69,7 +71,19 @@ public partial class MainWindow : Window
             double scaleY = Canvas.Bounds.Height / bitmap.Size.Height;
             double scale = Math.Min(scaleX, scaleY) * 100;
 
-            SldZoom.Value = scale;
+            if (SldZoom.Maximum < scale)
+            {
+                SldZoom.Value = SldZoom.Maximum;
+            }
+            else if (SldZoom.Minimum > scale)
+            {
+                SldZoom.Value = SldZoom.Minimum;
+            }
+            else
+            {
+                SldZoom.Value = scale;
+            }
+
             _scaleTransform.ScaleX = _scaleTransform.ScaleY = scale / 100;
             CenterImage();
         }

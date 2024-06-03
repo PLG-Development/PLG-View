@@ -9,7 +9,13 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitializeGUI();
+    }
+
+    internal void InitializeGUI()
+    {
         ImgLeft.Source = new Bitmap("arrow_left.png");
         ImgRight.Source = new Bitmap("arrow_right.png");
     }
+
 }

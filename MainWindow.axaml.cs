@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Tmds.DBus.Protocol;
+using MsBox.Avalonia;
 
 namespace PLG_View;
 
@@ -43,10 +44,11 @@ public partial class MainWindow : Window
                 ZoomableImage.Source = new Bitmap("arrow_left.png");
             } catch
             {
-                
+                var box = MessageBoxManager
+            .GetMessageBoxStandard("Caption", "Are you sure you would like to delete appender_replace_page_1?");
+                box.ShowAsync();
             }
         }
-        
     }
 
     internal void InitializeGUI()

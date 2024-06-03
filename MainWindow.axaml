@@ -4,6 +4,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="PLG_View.MainWindow"
-        Title="PLG_View">
-    Welcome to Avalonia!
+        Title="PLG View" WindowState="Maximized">
+	<Grid RowDefinitions="*,10,60,10">
+		<Grid x:Name="GrdControls" Background="#2367AA" Grid.Row="2" ColumnDefinitions="40*,10,10*,10,40*">
+			<Button Grid.Column="0" x:Name="BtnPrevoius" HorizontalAlignment="Right">
+				<Button.Content>
+					<Image x:Name="ImgLeft"></Image>
+				</Button.Content>
+			</Button>
+			<Slider Grid.Column="2" x:Name="SldZoom" VerticalAlignment="Center" />
+			<Button Grid.Column="4" x:Name="BtnNext" HorizontalAlignment="Left">
+				<Button.Content>
+					<Image x:Name="ImgRight"></Image>
+				</Button.Content>
+			</Button>
+		</Grid>
+		
+	</Grid>
 </Window>

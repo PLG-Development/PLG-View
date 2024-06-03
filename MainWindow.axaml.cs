@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Tmds.DBus.Protocol;
 using MsBox.Avalonia;
+using System;
 
 namespace PLG_View;
 
@@ -37,17 +38,40 @@ public partial class MainWindow : Window
         ZoomableImage.PointerMoved += Image_PointerMoved;
         ZoomableImage.PointerReleased += Image_PointerReleased;
 
-        if(args.Length >= 2)
+        foreach (var item in args)
+        {
+            Console.WriteLine(item);
+        }
+
+        if (args.Length >= 1)
         {
             try
             {
-                ZoomableImage.Source = new Bitmap("arrow_left.png");
-            } catch
+                var img = new Bitmap(args[0]);
+                ZoomableImage.Source = img;
+                this.Opened += (sender, e) => AdjustZoomToFit(img);
+
+            }
+            catch (Exception ex)
             {
                 var box = MessageBoxManager
-            .GetMessageBoxStandard("Caption", "Are you sure you would like to delete appender_replace_page_1?");
+            .GetMessageBoxStandard("Error while loading image", "Loading the file caused an error:" + ex.Message);
                 box.ShowAsync();
             }
+        }
+    }
+
+    private void AdjustZoomToFit(Bitmap bitmap)
+    {
+        if (bitmap != null && Canvas.Bounds.Width > 0 && Canvas.Bounds.Height > 0)
+        {
+            double scaleX = Canvas.Bounds.Width / bitmap.Size.Width;
+            double scaleY = Canvas.Bounds.Height / bitmap.Size.Height;
+            double scale = Math.Min(scaleX, scaleY) * 100;
+
+            SldZoom.Value = scale;
+            _scaleTransform.ScaleX = _scaleTransform.ScaleY = scale / 100;
+            CenterImage();
         }
     }
 
@@ -76,8 +100,11 @@ public partial class MainWindow : Window
             double scaledWidth = ZoomableImage.Source.Size.Width * _scaleTransform.ScaleX;
             double scaledHeight = ZoomableImage.Source.Size.Height * _scaleTransform.ScaleY;
 
-            _translateTransform.X = (Canvas.Bounds.Width - scaledWidth) / 2;
-            _translateTransform.Y = (Canvas.Bounds.Height - scaledHeight) / 2;
+            double offsetX = (Canvas.Bounds.Width - scaledWidth) / 2;
+            double offsetY = (Canvas.Bounds.Height - scaledHeight) / 2;
+
+            _translateTransform.X = offsetX;
+            _translateTransform.Y = offsetY;
         }
     }
 

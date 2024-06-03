@@ -6,13 +6,14 @@
         x:Class="PLG_View.MainWindow"
         Title="PLG View" WindowState="Maximized">
 	<Grid RowDefinitions="*,10,60,10">
-		<Grid x:Name="GrdControls" Background="#2367AA" Grid.Row="2" ColumnDefinitions="40*,10,10*,10,40*">
+		
+		<Grid x:Name="GrdControls" Grid.Row="2" ColumnDefinitions="40*,10,10*,10,40*">
 			<Button Grid.Column="0" x:Name="BtnPrevoius" HorizontalAlignment="Right">
 				<Button.Content>
 					<Image x:Name="ImgLeft"></Image>
 				</Button.Content>
 			</Button>
-			<Slider Grid.Column="2" x:Name="SldZoom" VerticalAlignment="Center" />
+			<Slider Minimum="10" Maximum="1000" Value="100" Grid.Column="2" x:Name="SldZoom" VerticalAlignment="Center" />
 			<Button Grid.Column="4" x:Name="BtnNext" HorizontalAlignment="Left">
 				<Button.Content>
 					<Image x:Name="ImgRight"></Image>

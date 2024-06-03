@@ -6,6 +6,9 @@ using Avalonia.Media.Imaging;
 using Tmds.DBus.Protocol;
 using MsBox.Avalonia;
 using System;
+using Avalonia.Interactivity;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace PLG_View;
 
@@ -17,6 +20,8 @@ public partial class MainWindow : Window
     private Point _origin;
     private Point _start;
     private bool _isDragging;
+    private string _currentFilePath;
+    private string[] _imageFilesInFolder;
 
     public MainWindow(string[] args)
     {
@@ -38,6 +43,10 @@ public partial class MainWindow : Window
         ZoomableImage.PointerMoved += Image_PointerMoved;
         ZoomableImage.PointerReleased += Image_PointerReleased;
 
+        
+        BtnNext.Click += BtnNext_Click;
+        BtnPrevious.Click += BtnPrevious_Click;
+
         foreach (var item in args)
         {
             Console.WriteLine(item);
@@ -47,22 +56,42 @@ public partial class MainWindow : Window
         {
             try
             {
-                var img = new Bitmap(args[0]);
-                ZoomableImage.Source = img;
-                this.Opened += (sender, e) => AdjustZoomToFit(img);
-
+                LoadImageFilesInFolder(Path.GetDirectoryName(args[0]));
+                OpenImageFileAsync(args[0]);
             }
             catch (Exception ex)
             {
-                var box = MessageBoxManager
-            .GetMessageBoxStandard("Error while loading image", "Loading the file caused an error:" + ex.Message);
+                var box = MessageBoxManager.GetMessageBoxStandard("Error while loading image", "Loading the file caused an error:" + ex.Message);
                 box.ShowAsync();
             }
         }
 
         this.SizeChanged += (sender, e) => AdjustZoomToFit(ZoomableImage.Source as Bitmap);
+        SetCanvasBackground();
     }
 
+    private void SetCanvasBackground()
+    {
+        
+    }
+
+    public async Task OpenFileAsync(string filePath)
+        {
+            try
+            {
+                var bitmap = await Task.Run(() => new Bitmap(filePath));
+                ZoomableImage.Source = bitmap;
+                AdjustZoomToFit(bitmap);
+                _currentFilePath = filePath;
+
+                // Lade die Bilddateien im selben Ordner
+                LoadImageFilesInFolder(Path.GetDirectoryName(filePath));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Fehler beim Öffnen der Datei: {ex.Message}");
+            }
+        }
     private void AdjustZoomToFit(Bitmap bitmap)
     {
         if (bitmap != null && Canvas.Bounds.Width > 0 && Canvas.Bounds.Height > 0)
@@ -151,5 +180,56 @@ public partial class MainWindow : Window
     {
         _isDragging = false;
         ZoomableImage.Cursor = new Cursor(StandardCursorType.Arrow);
+    }
+
+
+
+
+    private async void BtnNext_Click(object sender, RoutedEventArgs e)
+        {
+            if (_imageFilesInFolder == null || _imageFilesInFolder.Length == 0)
+                return;
+
+            int currentIndex = Array.IndexOf(_imageFilesInFolder, _currentFilePath);
+            int nextIndex = (currentIndex + 1) % _imageFilesInFolder.Length;
+
+            await OpenImageFileAsync(_imageFilesInFolder[nextIndex]);
+        }
+
+        private async void BtnPrevious_Click(object sender, RoutedEventArgs e)
+        {
+            if (_imageFilesInFolder == null || _imageFilesInFolder.Length == 0)
+                return;
+
+            int currentIndex = Array.IndexOf(_imageFilesInFolder, _currentFilePath);
+            int previousIndex = (currentIndex - 1 + _imageFilesInFolder.Length) % _imageFilesInFolder.Length;
+
+            await OpenImageFileAsync(_imageFilesInFolder[previousIndex]);
+        }
+    private async Task OpenImageFileAsync(string filePath)
+        {
+            try
+            {
+                var bitmap = await Task.Run(() => new Bitmap(filePath));
+                ZoomableImage.Source = bitmap;
+                AdjustZoomToFit(bitmap);
+                _currentFilePath = filePath;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Fehler beim Öffnen der Datei: {ex.Message}");
+            }
+        }
+        
+    private void LoadImageFilesInFolder(string folderPath)
+    {
+        try
+        {
+            _imageFilesInFolder = Directory.GetFiles(folderPath, "*.png");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading image files: {ex.Message}");
+        }
     }
 }

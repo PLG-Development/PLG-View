@@ -3,27 +3,74 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="PLG_View.MainWindow"
+        x:Class="PLG_View.MainWindow" MinWidth="600"
         Title="PLG View" WindowState="Maximized">
-	<Grid RowDefinitions="*,10,60,10">
-		<ScrollViewer x:Name="ScrollViewer" Grid.Row="0" Margin="10,10,10,10" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+	<Window.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="Datei öffnen" Click="OpenFile_Click"/>
+            <MenuItem Header="Ordner öffnen" Click="OpenFolder_Click"/>
+            <Separator />
+            <MenuItem Header="Modus ändern">
+                <MenuItem Header="Tafelmodus" Click="Tafelmodus_Click"/>
+                <MenuItem Header="Standardmodus" Click="Standardmodus_Click"/>
+                <MenuItem Header="Voller Modus" Click="VollerModus_Click"/>
+            </MenuItem>
+            <MenuItem Header="Vollbild" Click="Vollbild_Click"/>
+            <Separator />
+            <MenuItem Header="Beenden" Click="Beenden_Click"/>
+        </ContextMenu>
+    </Window.ContextMenu>
+		
+	<Grid>
+		<ScrollViewer x:Name="ScrollViewer" Margin="10,10,10,80" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
 			<Canvas x:Name="Canvas" Background="#ffffff">
 				<Image x:Name="ZoomableImage" Stretch="None" RenderTransformOrigin="0.5,0.5"/>
 			</Canvas>
 		</ScrollViewer>
-		<Grid x:Name="GrdControls" Grid.Row="2" ColumnDefinitions="40*,10,10*,10,40*">
-			<Button Grid.Column="0" x:Name="BtnPrevious" HorizontalAlignment="Right">
-				<Button.Content>
-					<Image x:Name="ImgLeft"></Image>
-				</Button.Content>
-			</Button>
-			<Slider Minimum="10" Maximum="1000" Value="100" Grid.Column="2" x:Name="SldZoom" VerticalAlignment="Center" />
-			<Button Grid.Column="4" x:Name="BtnNext" HorizontalAlignment="Left">
-				<Button.Content>
-					<Image x:Name="ImgRight"></Image>
-				</Button.Content>
-			</Button>
-		</Grid>
+		<Grid RowDefinitions="*,10,60,10" x:Name="GrdMain">
+			
+			<Grid x:Name="GrdControlsTafel" Grid.Row="2" ColumnDefinitions="300,*,300">
+				<Grid x:Name="GrdControlsTf1" Grid.Column="0" ColumnDefinitions="80,10,80,*">
+					<Button Grid.Column="0" x:Name="BtnPreviousTf1" HorizontalAlignment="Right">
+						<Button.Content>
+							<Image x:Name="ImgLeftTf1"></Image>
+						</Button.Content>
+					</Button>
+					<Slider Minimum="10" Maximum="1000" Value="100" Grid.Column="4" x:Name="SldZoomTf1" VerticalAlignment="Center" />
+					<Button Grid.Column="2" x:Name="BtnNextTf1" HorizontalAlignment="Left">
+						<Button.Content>
+							<Image x:Name="ImgRightTf1"></Image>
+						</Button.Content>
+					</Button>
+				</Grid>
+				<Grid x:Name="GrdControlsTf2" Grid.Column="2" ColumnDefinitions="*,80,10,80">
+					<Button Grid.Column="1" x:Name="BtnPreviousTf2" HorizontalAlignment="Right">
+						<Button.Content>
+							<Image x:Name="ImgLeftTf2"></Image>
+						</Button.Content>
+					</Button>
+					<Slider Minimum="10" Maximum="1000" Value="100" Grid.Column="0" x:Name="SldZoomTf2" VerticalAlignment="Center" />
+					<Button Grid.Column="3" x:Name="BtnNextTf2" HorizontalAlignment="Left">
+						<Button.Content>
+							<Image x:Name="ImgRightTf2"></Image>
+						</Button.Content>
+					</Button>
+				</Grid>
+			</Grid>
 
+			<Grid x:Name="GrdControlsStandard" Grid.Row="2" ColumnDefinitions="40*,10,10*,10,40*" IsVisible="false">
+				<Button Grid.Column="0" x:Name="BtnPrevious" HorizontalAlignment="Right">
+					<Button.Content>
+						<Image x:Name="ImgLeft"></Image>
+					</Button.Content>
+				</Button>
+				<Slider Minimum="10" Maximum="1000" Value="100" Grid.Column="2" x:Name="SldZoom" VerticalAlignment="Center" />
+				<Button Grid.Column="4" x:Name="BtnNext" HorizontalAlignment="Left">
+					<Button.Content>
+						<Image x:Name="ImgRight"></Image>
+					</Button.Content>
+				</Button>
+			</Grid>
+		</Grid>
 	</Grid>
 </Window>

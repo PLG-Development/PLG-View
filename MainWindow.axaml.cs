@@ -39,13 +39,19 @@ public partial class MainWindow : Window
         ZoomableImage.RenderTransform = _transformGroup;
 
         SldZoom.PropertyChanged += ZoomChanged;
+        SldZoomTf1.PropertyChanged += ZoomChanged;
+        SldZoomTf2.PropertyChanged += ZoomChanged;
         ZoomableImage.PointerPressed += Image_PointerPressed;
         ZoomableImage.PointerMoved += Image_PointerMoved;
         ZoomableImage.PointerReleased += Image_PointerReleased;
 
-        
+
         BtnNext.Click += BtnNext_Click;
+        BtnNextTf1.Click += BtnNext_Click;
+        BtnNextTf2.Click += BtnNext_Click;
         BtnPrevious.Click += BtnPrevious_Click;
+        BtnPreviousTf1.Click += BtnPrevious_Click;
+        BtnPreviousTf2.Click += BtnPrevious_Click;
 
         foreach (var item in args)
         {
@@ -72,26 +78,26 @@ public partial class MainWindow : Window
 
     private void SetCanvasBackground()
     {
-        
+
     }
 
     public async Task OpenFileAsync(string filePath)
+    {
+        try
         {
-            try
-            {
-                var bitmap = await Task.Run(() => new Bitmap(filePath));
-                ZoomableImage.Source = bitmap;
-                AdjustZoomToFit(bitmap);
-                _currentFilePath = filePath;
+            var bitmap = await Task.Run(() => new Bitmap(filePath));
+            ZoomableImage.Source = bitmap;
+            AdjustZoomToFit(bitmap);
+            _currentFilePath = filePath;
 
-                // Lade die Bilddateien im selben Ordner
-                LoadImageFilesInFolder(Path.GetDirectoryName(filePath));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Fehler beim Öffnen der Datei: {ex.Message}");
-            }
+            // Lade die Bilddateien im selben Ordner
+            LoadImageFilesInFolder(Path.GetDirectoryName(filePath));
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fehler beim Öffnen der Datei: {ex.Message}");
+        }
+    }
     private void AdjustZoomToFit(Bitmap bitmap)
     {
         if (bitmap != null && Canvas.Bounds.Width > 0 && Canvas.Bounds.Height > 0)
@@ -103,14 +109,20 @@ public partial class MainWindow : Window
             if (SldZoom.Maximum < scale)
             {
                 SldZoom.Value = SldZoom.Maximum;
+                SldZoomTf1.Value = SldZoom.Maximum;
+                SldZoomTf2.Value = SldZoom.Maximum;
             }
             else if (SldZoom.Minimum > scale)
             {
                 SldZoom.Value = SldZoom.Minimum;
+                SldZoomTf1.Value = SldZoom.Minimum;
+                SldZoomTf2.Value = SldZoom.Minimum;
             }
             else
             {
                 SldZoom.Value = scale;
+                SldZoomTf1.Value = scale;
+                SldZoomTf2.Value = scale;
             }
 
             _scaleTransform.ScaleX = _scaleTransform.ScaleY = scale / 100;
@@ -118,10 +130,28 @@ public partial class MainWindow : Window
         }
     }
 
+
+    RowDefinitions rows_tafel = new RowDefinitions();
+    RowDefinitions rows_standard = new RowDefinitions();
+
     internal void InitializeGUI()
     {
         ImgLeft.Source = new Bitmap("arrow_left.png");
         ImgRight.Source = new Bitmap("arrow_right.png");
+        ImgLeftTf1.Source = new Bitmap("arrow_left.png");
+        ImgRightTf1.Source = new Bitmap("arrow_right.png");
+        ImgLeftTf2.Source = new Bitmap("arrow_left.png");
+        ImgRightTf2.Source = new Bitmap("arrow_right.png");
+
+
+        rows_tafel.Add(new RowDefinition(new GridLength(0, GridUnitType.Star)));
+        rows_tafel.Add(new RowDefinition(new GridLength(10)));
+        rows_tafel.Add(new RowDefinition(new GridLength(60)));
+        rows_tafel.Add(new RowDefinition(new GridLength(10)));
+
+
+
+        rows_standard.Add(new RowDefinition(new GridLength(0, GridUnitType.Star)));
     }
 
     private void ZoomChanged(object sender, AvaloniaPropertyChangedEventArgs e)
@@ -133,6 +163,10 @@ public partial class MainWindow : Window
 
             // Bild zentrieren
             CenterImage();
+
+            SldZoomTf1.Value = (double)e.NewValue;
+            SldZoom.Value = (double)e.NewValue;
+            SldZoomTf2.Value = (double)e.NewValue;
         }
     }
 
@@ -186,41 +220,41 @@ public partial class MainWindow : Window
 
 
     private async void BtnNext_Click(object sender, RoutedEventArgs e)
-        {
-            if (_imageFilesInFolder == null || _imageFilesInFolder.Length == 0)
-                return;
+    {
+        if (_imageFilesInFolder == null || _imageFilesInFolder.Length == 0)
+            return;
 
-            int currentIndex = Array.IndexOf(_imageFilesInFolder, _currentFilePath);
-            int nextIndex = (currentIndex + 1) % _imageFilesInFolder.Length;
+        int currentIndex = Array.IndexOf(_imageFilesInFolder, _currentFilePath);
+        int nextIndex = (currentIndex + 1) % _imageFilesInFolder.Length;
 
-            await OpenImageFileAsync(_imageFilesInFolder[nextIndex]);
-        }
+        await OpenImageFileAsync(_imageFilesInFolder[nextIndex]);
+    }
 
-        private async void BtnPrevious_Click(object sender, RoutedEventArgs e)
-        {
-            if (_imageFilesInFolder == null || _imageFilesInFolder.Length == 0)
-                return;
+    private async void BtnPrevious_Click(object sender, RoutedEventArgs e)
+    {
+        if (_imageFilesInFolder == null || _imageFilesInFolder.Length == 0)
+            return;
 
-            int currentIndex = Array.IndexOf(_imageFilesInFolder, _currentFilePath);
-            int previousIndex = (currentIndex - 1 + _imageFilesInFolder.Length) % _imageFilesInFolder.Length;
+        int currentIndex = Array.IndexOf(_imageFilesInFolder, _currentFilePath);
+        int previousIndex = (currentIndex - 1 + _imageFilesInFolder.Length) % _imageFilesInFolder.Length;
 
-            await OpenImageFileAsync(_imageFilesInFolder[previousIndex]);
-        }
+        await OpenImageFileAsync(_imageFilesInFolder[previousIndex]);
+    }
     private async Task OpenImageFileAsync(string filePath)
+    {
+        try
         {
-            try
-            {
-                var bitmap = await Task.Run(() => new Bitmap(filePath));
-                ZoomableImage.Source = bitmap;
-                AdjustZoomToFit(bitmap);
-                _currentFilePath = filePath;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Fehler beim Öffnen der Datei: {ex.Message}");
-            }
+            var bitmap = await Task.Run(() => new Bitmap(filePath));
+            ZoomableImage.Source = bitmap;
+            AdjustZoomToFit(bitmap);
+            _currentFilePath = filePath;
         }
-        
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fehler beim Öffnen der Datei: {ex.Message}");
+        }
+    }
+
     private void LoadImageFilesInFolder(string folderPath)
     {
         try
@@ -231,5 +265,49 @@ public partial class MainWindow : Window
         {
             Console.WriteLine($"Error loading image files: {ex.Message}");
         }
+    }
+
+    private void Tafelmodus_Click(object sender, RoutedEventArgs e)
+    {
+        GrdControlsTafel.IsVisible = true;
+        GrdControlsStandard.IsVisible = false;
+
+        ScrollViewer.Margin = new Thickness(10,10,10,80);
+        CenterImage();
+    }
+
+    private void Standardmodus_Click(object sender, RoutedEventArgs e)
+    {
+        GrdControlsTafel.IsVisible = false;
+        GrdControlsStandard.IsVisible = true;
+        ScrollViewer.Margin = new Thickness(10,10,10,80);
+        CenterImage();
+    }
+
+    private void VollerModus_Click(object sender, RoutedEventArgs e)
+    {
+        GrdControlsTafel.IsVisible = false;
+        GrdControlsStandard.IsVisible = false;
+        ScrollViewer.Margin = new Thickness(10,10,10,10);
+        
+    }
+
+    private void Vollbild_Click(object sender, RoutedEventArgs e)
+    {
+        this.WindowState = WindowState.FullScreen;
+    }
+
+    private void Beenden_Click(object sender, RoutedEventArgs e)
+    {
+        this.Close();
+    }
+
+    private void OpenFolder_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+    private void OpenFile_Click(object sender, RoutedEventArgs e)
+    {
+
     }
 }

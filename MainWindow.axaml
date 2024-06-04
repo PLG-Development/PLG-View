@@ -3,10 +3,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="PLG_View.MainWindow" MinWidth="600"
+        x:Class="PLG_View.MainWindow" MinWidth="600" Focusable="true"
         Title="PLG View" WindowState="Maximized">
 	<Window.ContextMenu>
-        <ContextMenu>
+        <ContextMenu x:Name="MainContextMenu">
             <MenuItem Header="Datei öffnen" Click="OpenFile_Click"/>
             <MenuItem Header="Ordner öffnen" Click="OpenFolder_Click"/>
             <Separator />
@@ -43,6 +43,9 @@
 						</Button.Content>
 					</Button>
 				</Grid>
+				<Grid Grid.Column="1">
+					<Button x:Name="BtnContextMenuTf2" Content="..." Click="BtnContextMenu_Click" Margin="10,10,10,10" HorizontalAlignment="Center" VerticalAlignment="Center"></Button>
+				</Grid>
 				<Grid x:Name="GrdControlsTf2" Grid.Column="2" ColumnDefinitions="*,80,10,80">
 					<Button Grid.Column="1" x:Name="BtnPreviousTf2" HorizontalAlignment="Right">
 						<Button.Content>
@@ -59,6 +62,7 @@
 			</Grid>
 
 			<Grid x:Name="GrdControlsStandard" Grid.Row="2" ColumnDefinitions="40*,10,10*,10,40*" IsVisible="false">
+				<Button x:Name="BtnContextMenuo" Content="..." Grid.Column="4" Click="BtnContextMenu_Click" Margin="10,10,10,10" HorizontalAlignment="Right"></Button>
 				<Button Grid.Column="0" x:Name="BtnPrevious" HorizontalAlignment="Right">
 					<Button.Content>
 						<Image x:Name="ImgLeft"></Image>
@@ -70,6 +74,7 @@
 						<Image x:Name="ImgRight"></Image>
 					</Button.Content>
 				</Button>
+				
 			</Grid>
 		</Grid>
 	</Grid>

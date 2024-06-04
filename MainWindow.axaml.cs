@@ -8,7 +8,10 @@ using MsBox.Avalonia;
 using System;
 using Avalonia.Interactivity;
 using System.IO;
+using Avalonia.Platform.Storage;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+
 
 namespace PLG_View;
 
@@ -53,6 +56,8 @@ public partial class MainWindow : Window
         BtnPreviousTf1.Click += BtnPrevious_Click;
         BtnPreviousTf2.Click += BtnPrevious_Click;
 
+        this.KeyDown += Window_KeyDown;
+
         foreach (var item in args)
         {
             Console.WriteLine(item);
@@ -79,6 +84,63 @@ public partial class MainWindow : Window
     private void SetCanvasBackground()
     {
 
+    }
+
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Right)
+        {
+            BtnNext_Click(sender, e);
+        }
+        else if (e.Key == Key.Left)
+        {
+            BtnPrevious_Click(sender, e);
+        }
+        else if (e.Key == Key.F11)
+        {
+            this.WindowState = this.WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
+        }
+        else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.O)
+        {
+            OpenFile_Click(sender, e);
+        }
+        else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.F)
+        {
+            OpenFolder_Click(sender, e);
+        }
+        else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.T)
+        {
+            Tafelmodus_Click(sender, e);
+        }
+        else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.S)
+        {
+            Standardmodus_Click(sender, e);
+        }
+        else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.V)
+        {
+            VollerModus_Click(sender, e);
+        }
+        else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.OemPlus)
+        {
+            if(SldZoom.Value <= SldZoom.Maximum - 1)
+            {
+                SldZoom.Value += 1;
+                SldZoomTf1.Value += 1;
+                SldZoomTf2.Value += 1;
+
+            }
+        }
+        else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.OemMinus)
+        {
+            if(SldZoom.Value >= SldZoom.Minimum + 1)
+            {
+                SldZoom.Value -= 1;
+                SldZoomTf1.Value -= 1;
+                SldZoomTf2.Value -= 1;
+            }
+                
+        }
     }
 
     public async Task OpenFileAsync(string filePath)
@@ -302,12 +364,48 @@ public partial class MainWindow : Window
         this.Close();
     }
 
-    private void OpenFolder_Click(object sender, RoutedEventArgs e)
+    private async void OpenFolder_Click(object sender, RoutedEventArgs e)
     {
+
+        OpenFolderDialog ofd = new OpenFolderDialog();
+        ofd.Title = "Ordner öffnen";
+
+        var result = await ofd.ShowAsync(this);
+
+        if (!string.IsNullOrEmpty(result))
+        {
+            LoadImageFilesInFolder(result);
+            await OpenImageFileAsync(_imageFilesInFolder[0]);
+        }
 
     }
-    private void OpenFile_Click(object sender, RoutedEventArgs e)
+
+    private async void BtnContextMenu_Click(object sender, RoutedEventArgs e)
+    { 
+        MainContextMenu.Open(this);
+    }
+
+    private async void OpenFile_Click(object sender, RoutedEventArgs e)
     {
 
+        var opts = new FilePickerOpenOptions();
+        opts.Title = "Bild öffnen";
+        opts.AllowMultiple = false;
+
+        var type = new FilePickerFileType("Bilddateien (*.png; *.jpg; *.jpeg; *.webp)");
+        type.Patterns = new string[] { "*.png", "*.jpg", "*.jpeg", "*.webp" };
+        opts.FileTypeFilter = new FilePickerFileType[] { type };
+
+        IReadOnlyList<IStorageFile> paths = await StorageProvider.OpenFilePickerAsync(opts);
+
+        if (paths?.Count > 0)
+        {
+
+            LoadImageFilesInFolder(Path.GetDirectoryName(paths[0].TryGetLocalPath()));
+            OpenImageFileAsync(paths[0].TryGetLocalPath());
+        }
+        //OpenFileDialog ofd = new OpenFileDialog();
+        //ofd.Title = "Bild öffnen";
+        //ofd.Filters.Add(new FileDialogFilter());
     }
 }

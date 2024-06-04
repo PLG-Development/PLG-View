@@ -13,7 +13,7 @@
             <MenuItem Header="Modus ändern">
                 <MenuItem Header="Tafelmodus" Click="Tafelmodus_Click"/>
                 <MenuItem Header="Standardmodus" Click="Standardmodus_Click"/>
-                <MenuItem Header="Voller Modus" Click="VollerModus_Click"/>
+                <MenuItem Header="Konzentrationsmodus" Click="VollerModus_Click"/>
             </MenuItem>
             <MenuItem Header="Vollbild" Click="Vollbild_Click"/>
             <Separator />

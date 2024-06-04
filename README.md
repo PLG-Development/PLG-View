@@ -18,7 +18,7 @@ Die Steuerelemente sind in der Mitte am unteren Rand, das Menü auf der rechten S
 ### Tafelmodus
 Steuerelemente sind auf der rechten und linken Seite am unteren Rand dupliziert vorzufinden, das Menü befindet sich in der Mitte.
 
-### Voller Modus
+### Konzentrationsmodus
 Es sind keine Steuerelemente sichtbar.
 
 ## Tastenkombinationen
@@ -29,9 +29,10 @@ Es sind keine Steuerelemente sichtbar.
 | Strg + O | Datei öffnen |
 | Strg + T | Tafelmodus |
 | Strg + S | Standardmodus |
-| Strg + V | Voller Modus |
+| Strg + V | Konzentrationsmodus |
 | Strg + + | Reinzoomen |
-| Strg + - | Rasuzoomen |
+| Strg + - | Rauszoomen |
+| F11 | Vollbild |
 | Pfeil nach rechts | Nächstes Bild |
 | Pfeil nach links | Vorheriges Bild |
 | Rechtsklick | Menü öffnen |

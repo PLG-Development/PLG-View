@@ -11,6 +11,8 @@ using System.IO;
 using Avalonia.Platform.Storage;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
+using System.ComponentModel;
 
 
 namespace PLG_View;
@@ -20,9 +22,6 @@ public partial class MainWindow : Window
     private TransformGroup _transformGroup;
     private ScaleTransform _scaleTransform;
     private TranslateTransform _translateTransform;
-    private Point _origin;
-    private Point _start;
-    private bool _isDragging;
     private string _currentFilePath;
     private string[] _imageFilesInFolder;
 
@@ -47,7 +46,8 @@ public partial class MainWindow : Window
         ZoomableImage.PointerPressed += Image_PointerPressed;
         ZoomableImage.PointerMoved += Image_PointerMoved;
         ZoomableImage.PointerReleased += Image_PointerReleased;
-
+    
+        this.ContextMenu = null;
 
         BtnNext.Click += BtnNext_Click;
         BtnNextTf1.Click += BtnNext_Click;
@@ -68,6 +68,7 @@ public partial class MainWindow : Window
             try
             {
                 LoadImageFilesInFolder(Path.GetDirectoryName(args[0]));
+                Console.WriteLine(Path.GetDirectoryName(args[0]));
                 OpenImageFileAsync(args[0]);
             }
             catch (Exception ex)
@@ -154,6 +155,7 @@ public partial class MainWindow : Window
 
             // Lade die Bilddateien im selben Ordner
             LoadImageFilesInFolder(Path.GetDirectoryName(filePath));
+            Console.WriteLine(Path.GetDirectoryName(filePath));
         }
         catch (Exception ex)
         {
@@ -247,36 +249,95 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Image_PointerPressed(object sender, PointerPressedEventArgs e)
+
+// Variables to track drag gesture state
+private Point? _start;
+private Point _origin;
+private bool _isDragging;
+private bool _isTouchDragging;
+
+
+private void Image_PointerPressed(object sender, PointerPressedEventArgs e)
+{
+    var pointerPoint = e.GetCurrentPoint(Canvas);
+
+    // Check if input is from a touch device or left-click
+    if (pointerPoint.Pointer.Type == PointerType.Touch)
     {
-        var pointerPoint = e.GetCurrentPoint(Canvas);
-        if (pointerPoint.Properties.IsLeftButtonPressed)
-        {
-            _start = pointerPoint.Position;
-            _origin = new Point(_translateTransform.X, _translateTransform.Y);
-            ZoomableImage.Cursor = new Cursor(StandardCursorType.Hand);
-            _isDragging = true;
-        }
+        // Initialize dragging for touch
+        _start = pointerPoint.Position;
+        _origin = new Point(_translateTransform.X, _translateTransform.Y);
+        ZoomableImage.Cursor = new Cursor(StandardCursorType.Hand);
+        _isDragging = true;
+        _isTouchDragging = true;  // Flag for touch dragging
+
+        // Suppress context menu for touch
+        e.Handled = true; 
+    }
+    else if (pointerPoint.Properties.IsLeftButtonPressed)
+    {
+        // Initialize dragging for mouse left-click
+        _start = pointerPoint.Position;
+        _origin = new Point(_translateTransform.X, _translateTransform.Y);
+        ZoomableImage.Cursor = new Cursor(StandardCursorType.Hand);
+        _isDragging = true;
+
+        // Suppress context menu
+        e.Handled = true; 
     }
 
-    private void Image_PointerMoved(object sender, PointerEventArgs e)
+    // Prevent context menu from appearing for right clicks
+    if (pointerPoint.Properties.IsRightButtonPressed)
     {
-        if (_isDragging)
-        {
-            var currentPosition = e.GetPosition(Canvas);
-            var deltaX = currentPosition.X - _start.X;
-            var deltaY = currentPosition.Y - _start.Y;
-
-            _translateTransform.X = _origin.X + deltaX;
-            _translateTransform.Y = _origin.Y + deltaY;
-        }
+        e.Handled = true;  // Suppress the context menu
     }
+}
 
-    private void Image_PointerReleased(object sender, PointerReleasedEventArgs e)
+private void Image_PointerMoved(object sender, PointerEventArgs e)
+{
+    if (_isDragging && _start.HasValue)
     {
+        var currentPosition = e.GetPosition(Canvas);
+        var deltaX = currentPosition.X - _start.Value.X;
+        var deltaY = currentPosition.Y - _start.Value.Y;
+
+        // Apply translation (dragging effect)
+        _translateTransform.X = _origin.X + deltaX;
+        _translateTransform.Y = _origin.Y + deltaY;
+
+        // Suppress context menu for touch and drag
+        e.Handled = true; 
+    }
+}
+
+private void Image_PointerReleased(object sender, PointerReleasedEventArgs e)
+{
+    if (_isDragging)
+    {
+        // End dragging
         _isDragging = false;
         ZoomableImage.Cursor = new Cursor(StandardCursorType.Arrow);
+
+        // Suppress context menu
+        e.Handled = true; 
     }
+
+    // Prevent the context menu from appearing for touch releases
+    if (_isTouchDragging)
+    {
+        _isTouchDragging = false;
+        e.Handled = true;  // Explicitly prevent context menu for touch
+    }
+
+    // Suppress the context menu on right-click
+    var pointerPoint = e.GetCurrentPoint(Canvas);
+    if (pointerPoint.Properties.IsRightButtonPressed)
+    {
+        e.Handled = true;  // Prevent right-click context menu
+    }
+}
+
+
 
 
 
@@ -319,13 +380,17 @@ public partial class MainWindow : Window
 
     private void LoadImageFilesInFolder(string folderPath)
     {
-        try
+        
+        string[] extensions = new[] { "*.png", "*.jpg", "*.jpeg", "*.JPG" };
+
+        if (Directory.Exists(folderPath))
         {
-            _imageFilesInFolder = Directory.GetFiles(folderPath, "*.png");
+            // Retrieve files for each extension and combine into one array
+            _imageFilesInFolder = extensions.SelectMany(ext => Directory.GetFiles(folderPath, ext)).ToArray();
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"Error loading image files: {ex.Message}");
+            Console.WriteLine("The directory does not exist.");
         }
     }
 
@@ -371,11 +436,18 @@ public partial class MainWindow : Window
         ofd.Title = "Ordner öffnen";
 
         var result = await ofd.ShowAsync(this);
+        
+        Console.WriteLine(result);
 
         if (!string.IsNullOrEmpty(result))
         {
-            LoadImageFilesInFolder(result);
-            await OpenImageFileAsync(_imageFilesInFolder[0]);
+            LoadImageFilesInFolder(result.ToString());
+            if(_imageFilesInFolder.Length > 0){
+                await OpenImageFileAsync(_imageFilesInFolder[0]);
+            } else {
+                Console.WriteLine("No images found in folder");
+            }
+            
         }
 
     }
@@ -402,6 +474,7 @@ public partial class MainWindow : Window
         {
 
             LoadImageFilesInFolder(Path.GetDirectoryName(paths[0].TryGetLocalPath()));
+            Console.WriteLine(Path.GetDirectoryName(paths[0].TryGetLocalPath()));
             OpenImageFileAsync(paths[0].TryGetLocalPath());
         }
         //OpenFileDialog ofd = new OpenFileDialog();
